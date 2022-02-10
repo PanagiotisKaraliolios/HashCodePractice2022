@@ -62,7 +62,7 @@ def solve(clients):
     best_solution = solution
     best_score = current_score
 
-    for i in range(1):
+    for i in range(3):
         # for each ingredient in the list of disliked ingredients.
         for ingredient in tqdm.tqdm(disliked):
 
