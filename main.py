@@ -8,18 +8,18 @@
 # and maybe some ingredients they dislike. Each client will come to your pizzeria if both conditions are true:
 # 1. all the ingredients they like are on the pizza, and
 # 2. none of the ingredients they dislike are on the pizza.
-# Each client is OK with additional ingredients they neither like or dislike being present on the pizza.
+# Each client is OK with additional ingredients they neither like nor dislike being present on the pizza.
 # Your task is to choose which ingredients to put on your only pizza type, to maximize the number of clients that
 # will visit your pizzeria.
 # Input:
-# The first line contains one integer 1≤C≤10^5 - the number of potential clients.
-# The following 2×C lines describe the clients’ preferences in the following format:
-# First line contains integer 1≤L≤5, followed by L names of ingredients a client likes, delimited by spaces.
-# Second line contains integer 0≤D≤5, followed by D names of ingredients a client dislikes, delimited by spaces.
+# The first line contains one integer 1<=C<=10^5 - the number of potential clients.
+# The following 2*C lines describe the client's preferences in the following format:
+# First line contains integer 1<=L<=5, followed by L names of ingredients a client likes, delimited by spaces.
+# Second line contains integer 0<=D<=5, followed by D names of ingredients a client dislikes, delimited by spaces.
 # Each ingredient name consists of between 1 and 15 ASCII characters. Each character is one of the lowercase letters (a-z) or a digit (0-9).
 #
 # Output:
-# The submission should consist of one line consisting of a single number 0≤N followed by a list of N ingredients
+# The submission should consist of one line consisting of a single number 0â‰¤N followed by a list of N ingredients
 # to put on the only pizza available in the pizzeria, separated by spaces.
 # The list of ingredients should contain only the ingredients mentioned by at least one client, without duplicates.
 #
@@ -37,82 +37,55 @@ def solve(clients):
     Solve problem.
     """
     # Initialize solution.
-    solution = []
+    solution = set()
 
     # Make a list of all ingredients.
-    ingredients = []
-    for client in clients:
-        ingredients.extend(client[1])
-        ingredients.extend(client[2])
-    ingredients = list(set(ingredients))
-
-    # From the list of ingredients, remove those that are disliked and add them to a saperate list.
+    ingredients = set()
     disliked = set()
-    for ingredient in ingredients:
-        for client in clients:
-            if ingredient in client[2]:
-                disliked.add(ingredient)
+    for client in clients:
+        ingredients.update(client[1])
+        ingredients.update(client[2])
+        disliked.update(client[2])
 
     # Remove disliked ingredients from the list of ingredients if they are present.
-    for ingredient in disliked:
-        if ingredient in ingredients:
-            ingredients.remove(ingredient)
+    ingredients -= disliked
 
     # Add ingredients to solution.
-    for ingredient in ingredients:
-        solution.append(ingredient)
+    solution.update(ingredients)
 
     # Evaluate current solution.
     current_score = 0
     for client in clients:
-        # If client likes all ingredients and dislikes no ingredients, add one to score.
-        if set(client[1]).issubset(set(solution)) and set(client[2]).isdisjoint(set(solution)):
+        if set(client[1]).issubset(set(solution)) and not set(client[2]).intersection(set(solution)):
             current_score += 1
 
     best_solution = solution
     best_score = current_score
 
-    # for each ingredient in the list of disliked ingredients.
-    for ingredient in tqdm.tqdm(disliked):
+    for i in range(1):
+        # for each ingredient in the list of disliked ingredients.
+        for ingredient in tqdm.tqdm(disliked):
 
-        # add the ingredient to the solution
-        solution.append(ingredient)
+            # add the ingredient to the solution
+            solution.add(ingredient)
 
-        # calculate the score of the solution
-        score = 0
-        for client in clients:
-            # If client likes all ingredients and dislikes no ingredients, add one to score.
-            if set(client[1]).issubset(set(solution)) and set(client[2]).isdisjoint(set(solution)):
-                score += 1
+            # calculate the score of the solution
+            score = 0
+            for client in clients:
+                # If client likes all ingredients and dislikes no ingredients, add one to score.
+                if set(client[1]).issubset(solution) and not set(client[2]).intersection(solution):
+                    score += 1
 
-        # if the score is better or equal to the best score, update the best solution and score.
-        if score >= best_score:
-            best_solution = solution
-            best_score = score
-        # if the score is not better than the best score, remove the ingredient from the solution
-        else:
-            solution.remove(ingredient)
-
-    # # Loop over clients.
-    # for client in clients:
-    #     # Get client preferences.
-    #     likes = client[1]
-    #     dislikes = client[2]
-    #     # Loop over likes.
-    #     for like in likes:
-    #         # If like is not in solution.
-    #         if like not in solution:
-    #             # Append like to solution.
-    #             solution.append(like)
-    #
-    #     # Loop over dislikes.
-    #     for dislike in dislikes:
-    #         # If dislike is in solution.
-    #         if dislike in solution:
-    #             # Remove dislike from solution.
-    #             solution.remove(dislike)
+            # if the score is better or equal to the best score, update the best solution and score.
+            if score >= best_score:
+                best_solution = solution
+                best_score = score
+            # if the score is not better than the best score, remove the ingredient from the solution
+            else:
+                solution.remove(ingredient)
 
     # Return solution.
+    best_solution = list(set(best_solution))
     return best_solution
 
 
@@ -170,9 +143,8 @@ def main():
                 dislikes = client[2]
 
                 # If all likes are in solution and none of the dislikes are in solution.
-                if all(like in ingredients for like in likes) and not any(
-                        dislike in ingredients for dislike in dislikes):
-                    # Increment score.
+                if set(likes).issubset(set(ingredients)) and set(dislikes).isdisjoint(set(ingredients)):
+                    # Add one to score.
                     score += 1
 
             # Print score.
